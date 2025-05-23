@@ -1,5 +1,7 @@
 import random as rand
 
+visited = 0
+
 class Nodo():
     def __init__(self, estado, papa = None, costo = -1):
         self.estado = estado
@@ -23,8 +25,6 @@ class Nodo():
             new_estado[pos] = new_estado[pos-n] # copiar valor de esa posicion
             new_estado[pos-n] = "_"             # asignar el hueco en la matriz
             
-            #print("arr")
-            
             new_nodo = Nodo(new_estado, self, self.costo)
             self.hijos.append(new_nodo)
             
@@ -39,8 +39,6 @@ class Nodo():
             new_estado = self.estado[:]         # copiar
             new_estado[pos] = new_estado[pos+n] # copiar valor de esa posicion
             new_estado[pos+n] = "_"             # asignar el hueco en la matriz
-            #self.hijos.append(Nodo(new_estado, self))
-            #print("ab")
 
             new_nodo = Nodo(new_estado, self, self.costo)
             self.hijos.append(new_nodo)
@@ -56,8 +54,7 @@ class Nodo():
             new_estado = self.estado[:]         # copiar
             new_estado[pos] = new_estado[pos-1] # copiar valor de esa posicion
             new_estado[pos-1] = "_"             # asignar el hueco en la matriz
-            #self.hijos.append(Nodo(new_estado, self))
-            #print("izq")
+
             new_nodo = Nodo(new_estado, self, self.costo)
             self.hijos.append(new_nodo)
             
@@ -72,9 +69,7 @@ class Nodo():
             new_estado = self.estado[:]         # copiar
             new_estado[pos] = new_estado[pos+1] # copiar valor de esa posicion
             new_estado[pos+1] = "_"             # asignar el hueco en la matriz
-            #self.hijos.append(Nodo(new_estado, self))
-            #print("der")
-
+ 
             new_nodo = Nodo(new_estado, self, self.costo)
             self.hijos.append(new_nodo)
             
@@ -85,8 +80,6 @@ class Nodo():
                 else:
                     new_nodo.f_n(meta)  # fn = g(n) (costo) + h(n)
 
-        print(pos)
-
     def soy_visitado(self, visitados):
         #return any(self.estado == arr for arr in visitados)
         return self.estado in visitados
@@ -94,7 +87,7 @@ class Nodo():
     def bpp(self, meta, visitados=None): # busqueda primero en profundidad (DFS Depth First Search)
 
         if self.estado == meta: # si soy
-            print("YA QUEDOOO")
+            visited = len(visitados)
             return [self]
         # soy gemelo malvado de uno visitado? checar si nodo ya se visito
         # return None
@@ -110,18 +103,15 @@ class Nodo():
         visitados.append(self.estado)
 
         for h in self.hijos: # hijos de self
-            #print(h)
-            #if h.estado in visitados: #otra opcion
-                #continue
             res = h.bpp(meta, visitados) # los nietos 
             if not (res == None): # si hay resutado
                 res.append(self)
                 return res
 
     def bpa(self, meta, visitados = None, por_visitar = []): # busqueda primero por anchura
+        global visited
         # --- hacerlo funcion
         if self.estado == meta: # soy la meta?
-            print("YA QUEDO")
             return [self]
         
         if visitados is None: # si visitados vacio, se inicializa
@@ -138,8 +128,7 @@ class Nodo():
         while (por_visitar != []):
             h = por_visitar.pop(0)
             if h.estado == meta: # soy yo?
-                print("YA SE ENCONTRO")
-                print("visitados: bpa ",  len(visitados))
+                visited = len(por_visitar) + len(visitados)
                 camino = [h]
                 papa = h.papa
                 while (papa != None):
@@ -183,8 +172,6 @@ class Nodo():
         while(por_visitar!= []):
             h = por_visitar.pop(0)
             if h.estado == meta: # soy yo?
-                print("YA SE ENCONTRO")
-                print("visitados: greedy",  len(visitados))
                 camino = [h]
                 papa = h.papa
                 while (papa != None):
@@ -211,8 +198,6 @@ class Nodo():
         while(por_visitar!= []):
             h = por_visitar.pop(0)
             if h.estado == meta: # soy yo?
-                print("YA SE ENCONTRO")
-                print("visitados: a*",  len(visitados))
                 camino = [h]
                 papa = h.papa
                 while (papa != None):
@@ -242,65 +227,29 @@ class Nodo():
         return self.estado == n2.estado
 
     def __repr__(self):
-        return("\n--------\n" + str(self.estado[:3]) + "\n" + str(self.estado[3:6]) +"\n" + str(self.estado[6:]))
-    
-raiz = Nodo([7,5,4,6,"_",1,2,3,8])
-meta = [7,8,4,6,5,1,2,3,"_"]
+        return("\n" + str(self.costo) + " --------\n" + str(self.estado[:3]) + "\n" + str(self.estado[3:6]) +"\n" + str(self.estado[6:]))
 
-visitados_greedy = []
-visitados_bpa = []
-visitados_astar = []
+meta = [1, 2, 3,
+        4, 5, 6,
+        7, 8, "_"]    
 
-#print(raiz.heuristica1(meta))
-#print(raiz.heuristica2(meta))
-#print(len(raiz.bpa(meta, visitados=visitados_astar)))
-print(len(raiz.a_star(meta, visitados=visitados_astar)))
+raiz = Nodo(
+    [4, 1, 3,
+    7,"_",2,
+    8, 6, 5])
 
-#print("visitados greedy", len(visitados_greedy))
-#print("visitados bpa", len(visitados_bpa))
-print("visitados a*", len(visitados_astar))
+solucion = raiz.bpa(meta)
+for p in solucion:
+    print(p)
 
-#print(raiz)
+print("Movimientos: ", len(solucion))
 
-"""
 #Estado inicial
 #7,5,4
-#6,8,1
-#2,3,_
+#6,_,1
+#2,3,8
 
 #Estado meta
 #1,2,3
 #4,5,6
 #7,8,_
-
-#estado inicial
-
-2 5 3
-1 _ 6
-4 7 8
-
-
-#raiz = Nodo ([7,5,4,6,"_",1,2,3,8])
-#meta = [7,5,4,6,"_",1,2,3,8]
-
-#raiz = Nodo([1,2,3,"_",5,6,4,7,8])
-raiz = Nodo([8,7,6,3,1,4,5,2,"_"])
-m = [1,2,3,4,5,6,7,8,"_"]
-
-
-print(raiz)
-raiz.genera_hijos()
-
-for h in raiz.hijos:
-    print(h)
-
-print(raiz.greedy(m))
-
-visitadosgreedy
-bpa
-astar
-
-print(raiz.heuristica1(meta))
-print(raiz.heuristica2(meta))
-print(len)
-"""
